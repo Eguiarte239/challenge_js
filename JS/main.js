@@ -1,54 +1,59 @@
 let intervalId;
+const calculateButton = document.getElementById("calculate");
+const resetButton = document.getElementById("reset");
+const daysElement = document.getElementById("days");
+const hoursElement = document.getElementById("hours");
+const minutesElement = document.getElementById("minutes");
+const secondsElement = document.getElementById("seconds");
 
-document.getElementById("calculate").onclick = function () {
-    intervalId = setInterval( function () {
+function resetTimer() {
+    clearInterval(intervalId);
+    daysElement.textContent = "0";
+    hoursElement.textContent = "0";
+    minutesElement.textContent = "0";
+    secondsElement.textContent = "0";
+}
+
+function startTimer() {
+    intervalId = setInterval(() => {
         try {
-            let inputDate = document.getElementById("input-dates").value;
+            const inputDate = document.getElementById("input-dates").value;
             
             if(!inputDate) {
                 throw new Error('Cannot use an empty date');
             }
 
-            let dateParts = inputDate.split('-');
-            let year = parseInt(dateParts[0], 10);
-            let month = parseInt(dateParts[1], 10) - 1;
-            let day = parseInt(dateParts[2], 10);
-            let desiredDate = new Date(year, month, day);
-            let currentDate = new Date();
+            const [year, month, day] = inputDate.split('-').map(part => parseInt(part, 10));
+            const desiredDate = new Date(year, month - 1, day);
+            const currentDate = new Date();
 
             if(desiredDate.getTime() <= currentDate.getTime()) {
                 throw new Error('Desired date must be greater than current date');
             }
 
             let differenceInTime = desiredDate.getTime() - currentDate.getTime();
-            let differenceInDays = Math.floor(differenceInTime / (1000*3600*24));
-            let differenceInHours = Math.floor((differenceInTime % (1000*3600*24)) / (1000*3600));
-            let differenceInMinutes = Math.floor((differenceInTime & (1000*3600)) / (1000*60));
-            let differenceInSeconds = Math.floor((differenceInTime % (1000*60)) / 1000);
+            const differenceInDays = Math.floor(differenceInTime / (1000*3600*24));
+            differenceInTime %= 1000*3600*24;
+            const differenceInHours = Math.floor(differenceInTime / (1000*3600));
+            differenceInTime %= 1000*3600;
+            const differenceInMinutes = Math.floor(differenceInTime / (1000*60));
+            differenceInTime %= 1000*60;
+            const differenceInSeconds = Math.floor(differenceInTime / 1000);
 
-            document.getElementById('days').textContent = differenceInDays;
-            document.getElementById('hours').textContent = differenceInHours;
-            document.getElementById('minutes').textContent = differenceInMinutes;
-            document.getElementById('seconds').textContent = differenceInSeconds;
+            daysElement.textContent = differenceInDays;
+            hoursElement.textContent = differenceInHours;
+            minutesElement.textContent = differenceInMinutes;
+            secondsElement.textContent = differenceInSeconds;
 
             if(differenceInTime < 0) {
-                clearInterval(intervalId);
-                document.getElementById('days').textContent = '0';
-                document.getElementById('hours').textContent = '0';
-                document.getElementById('minutes').textContent = '0';
-                document.getElementById('seconds').textContent = '0';
+                resetTimer();
             }
         } catch(error) {
-            clearInterval(intervalId);
+            resetTimer();
             alert(error.message);
         }
     }, 1000);
-};
-
-document.getElementById('reset').onclick = function () {
-    clearInterval(intervalId);
-    document.getElementById('days').textContent = '0';
-    document.getElementById('hours').textContent = '0';
-    document.getElementById('minutes').textContent = '0';
-    document.getElementById('seconds').textContent = '0';
 }
+
+calculateButton.addEventListener("click", startTimer);
+resetButton.addEventListener("click", resetTimer);
